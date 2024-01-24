@@ -10,9 +10,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(response_body).encode('utf-8'))
 
     def do_GET(self):
-        if self.path == '/board':
-            lights = self._generate_lights()
-            response_body = {'lights': lights}
+        if self.path.startswith('/board'):
+            # Extract the number of routes from the query parameters
+            query_params = self._parse_query_params()
+            num_routes = query_params.get('routes', 1)
+            
+            routes = [self._generate_lights() for _ in range(num_routes)]
+            response_body = {'routes': routes}
             self._send_response(200, response_body)
         else:
             response_body = {'message': 'Not Found'}
@@ -39,6 +43,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         lights['red'].append((1, random.randint(0, 17)))
 
         return lights
+
+    def _parse_query_params(self):
+        query_string = self.path.split('?')[-1]
+        params = {}
+        if query_string:
+            for param in query_string.split('&'):
+                key, value = param.split('=')
+                params[key] = int(value) if value.isdigit() else value
+        return params
 
 def run(server_class=HTTPServer, handler_class=SimpleHTTPRequestHandler, port=8000):
     server_address = ('', port)
