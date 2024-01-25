@@ -16,7 +16,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             num_routes = query_params.get('routes', 1)
             
             routes = [self._generate_lights() for _ in range(num_routes)]
-            response_body = {'routes': routes}
+            response_body = routes
             self._send_response(200, response_body)
         else:
             response_body = {'message': 'Not Found'}
